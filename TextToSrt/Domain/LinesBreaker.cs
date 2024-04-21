@@ -1,39 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SubtitlesConverter.Common;
 
-namespace TextToSrt
+namespace SubtitlesConverter.Domain
 {
     class LinesBreaker
     {
-        private IEnumerable<(string separatorPattern, string appendLeft, string prependRight)[]> 
-            Rules { get; } = new []
+        private IEnumerable<(string separatorPattern, string appendLeft, string prependRight)[]>
+            Rules
+        { get; } = new[]
         {
-            new[] 
-            {            
+            new[]
+            {
                 (", ", "...", "... "),
                 ("; ", "...", "... "),
                 (" - ", "...", "... "),
             },
-            new[] 
-            {            
+            new[]
+            {
                 (" and ", "...", "... and "),
                 (" or ", "...", "... or "),
             },
-            new[] 
-            {            
+            new[]
+            {
                 (" to ", "...", "... to "),
                 (" then ", "...", "... then "),
             },
-            new[] 
-            {            
+            new[]
+            {
                 (" ", "...", "... ")
             },
         };
 
         public IEnumerable<string> BreakLongLines(
             IEnumerable<string> text, int maxLineCharacters, int minBrokenLength) =>
-            text.SelectMany(line => this.BreakLongLine(line, maxLineCharacters, minBrokenLength));
+            text.SelectMany(line => BreakLongLine(line, maxLineCharacters, minBrokenLength));
 
         public IEnumerable<string> BreakLongLine(string line, int maxLength, int minBrokenLength)
         {
@@ -48,10 +50,10 @@ namespace TextToSrt
                 }
 
                 bool broken = false;
-                foreach ((string separator, string toLeft, string toRight)[] rules in this.Rules)
+                foreach ((string separator, string toLeft, string toRight)[] rules in Rules)
                 {
                     IEnumerable<(string left, string right)> split =
-                        this.TryBreakLongLine(remaining, rules, maxLength, minBrokenLength)
+                        TryBreakLongLine(remaining, rules, maxLength, minBrokenLength)
                             .ToList();
 
                     if (split.Any())
@@ -73,22 +75,22 @@ namespace TextToSrt
         }
 
         private IEnumerable<(string left, string right)> TryBreakLongLine(
-            string line, 
+            string line,
             IEnumerable<(string separatorPattern, string appendLeft, string prependRight)> rules,
             int maxLength, int minBrokenLength) =>
-            rules.SelectMany(rule => this.BreakLongLine(line, rule, maxLength, minBrokenLength))
+            rules.SelectMany(rule => BreakLongLine(line, rule, maxLength, minBrokenLength))
                 .WithMinimumOrEmpty(split => maxLength - split.left.Length);
 
         private IEnumerable<(string left, string right)> BreakLongLine(
-            string line, 
-            (string separatorPattern, string appendLeft, string prependRight) rule, 
-            int maxLength, int minBrokenLength) => 
+            string line,
+            (string separatorPattern, string appendLeft, string prependRight) rule,
+            int maxLength, int minBrokenLength) =>
             new Regex(rule.separatorPattern).Matches(line)
                 .Select(match => (
-                    left: line.Substring(0, match.Index) + rule.appendLeft, 
+                    left: line.Substring(0, match.Index) + rule.appendLeft,
                     right: rule.prependRight + line.Substring(match.Index + match.Length)))
-                .Where(split => 
-                    minBrokenLength <= split.left.Length && 
+                .Where(split =>
+                    minBrokenLength <= split.left.Length &&
                     split.left.Length <= maxLength);
     }
 }

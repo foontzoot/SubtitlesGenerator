@@ -2,8 +2,9 @@
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using SubtitlesConverter.Domain;
 
-namespace TextToSrt
+namespace SubtitlesConverter.Presentation
 {
     class Program
     {
@@ -17,7 +18,7 @@ namespace TextToSrt
 
         static bool Verify(string[] args) =>
             args.Length == 3 &&
-            File.Exists(args[0]) && 
+            File.Exists(args[0]) &&
             Regex.IsMatch(args[2], @"\d+:[0-5][0-9]:[0-5][0-9](\.\d+)?");
 
         static void Process(FileInfo source, FileInfo destination, TimeSpan clipDuration)

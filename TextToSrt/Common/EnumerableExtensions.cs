@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace TextToSrt
+namespace SubtitlesConverter.Common
 {
     public static class EnumerableExtensions
     {
         public static T WithMinimum<T, TKey>(
-            this IEnumerable<T> sequence, Func<T, TKey> selector) 
+            this IEnumerable<T> sequence, Func<T, TKey> selector)
             where TKey : IComparable<TKey> =>
             sequence
                 .Select(obj => (element: obj, key: selector(obj)))
@@ -16,7 +16,7 @@ namespace TextToSrt
                 .element;
 
         public static IEnumerable<T> WithMinimumOrEmpty<T, TKey>(
-            this IEnumerable<T> sequence, Func<T, TKey> selector) 
+            this IEnumerable<T> sequence, Func<T, TKey> selector)
             where TKey : IComparable<TKey> =>
             sequence
                 .Select(obj => (element: obj, key: selector(obj)))

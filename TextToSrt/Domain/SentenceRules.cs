@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SubtitlesConverter.Common;
 
-namespace TextToSrt
+namespace SubtitlesConverter.Domain
 {
     class SentenceRules
     {
@@ -16,8 +17,8 @@ namespace TextToSrt
             (@"^(?<extract>.+\!).*$", "${extract}", "${extract}"),
         };
 
-        public IEnumerable<string> Split(IEnumerable<string> text) => 
-            text.SelectMany(this.BreakSentences);
+        public IEnumerable<string> Split(IEnumerable<string> text) =>
+            text.SelectMany(BreakSentences);
 
         private IEnumerable<string> BreakSentences(string text)
         {
@@ -25,12 +26,12 @@ namespace TextToSrt
             while (remaining.Length > 0)
             {
                 (string extracted, string rest) =
-                    this.FindShortestExtractionRule(this.Rules, remaining)
+                    FindShortestExtractionRule(Rules, remaining)
                         .Select(tuple => (
-                            extracted: tuple.extracted, 
+                            tuple.extracted,
                             removedLength: tuple.remove.Length))
                         .Select(tuple => (
-                            extracted: tuple.extracted, 
+                            tuple.extracted,
                             remaining: remaining.Substring(tuple.removedLength).Trim()))
                         .DefaultIfEmpty((extracted: remaining, remaining: string.Empty))
                         .First();
@@ -41,21 +42,21 @@ namespace TextToSrt
         }
 
         private IEnumerable<(string extracted, string remove)> FindShortestExtractionRule(
-            IEnumerable<(string pattern, string extractPattern, string removePattern)> rules, 
+            IEnumerable<(string pattern, string extractPattern, string removePattern)> rules,
             string text) =>
             rules
                 .Select(rule => (
-                    pattern: new Regex(rule.pattern), 
-                    extractPattern: rule.extractPattern, 
-                    removePattern: rule.removePattern))
+                    pattern: new Regex(rule.pattern),
+                    rule.extractPattern,
+                    rule.removePattern))
                 .Select(rule => (
-                    pattern: rule.pattern, 
-                    match: rule.pattern.Match(text), 
-                    extractPattern: rule.extractPattern, 
-                    removePattern: rule.removePattern))
+                    rule.pattern,
+                    match: rule.pattern.Match(text),
+                    rule.extractPattern,
+                    rule.removePattern))
                 .Where(rule => rule.match.Success)
                 .Select(rule => (
-                    extracted: rule.pattern.Replace(text, rule.extractPattern), 
+                    extracted: rule.pattern.Replace(text, rule.extractPattern),
                     remove: rule.pattern.Replace(text, rule.removePattern)))
                 .WithMinimumOrEmpty(tuple => tuple.remove.Length);
     }

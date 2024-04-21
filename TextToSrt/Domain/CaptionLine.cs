@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TextToSrt
+namespace SubtitlesConverter.Domain
 {
     class CaptionLine
     {
@@ -9,11 +9,11 @@ namespace TextToSrt
 
         public CaptionLine(string content, TimeSpan duration)
         {
-            this.Content = content.Trim();
-            this.Duration = duration;
+            Content = content.Trim();
+            Duration = duration;
         }
 
         public override string ToString() =>
-            $"{this.Duration} --> {this.Content}";
+            $"{Duration} --> {Content}";
     }
 }
