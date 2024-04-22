@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SubtitlesConverter.Common
 {
-    public static class EnumerableExtensions
+    public static class EnumerableMinimum
     {
         public static T WithMinimum<T, TKey>(
             this IEnumerable<T> sequence, Func<T, TKey> selector)

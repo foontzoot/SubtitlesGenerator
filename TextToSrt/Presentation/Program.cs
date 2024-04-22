@@ -26,7 +26,7 @@ namespace SubtitlesConverter.Presentation
             try
             {
                 string[] text = File.ReadAllLines(source.FullName);
-                Captions captions = Captions.Parse(text, clipDuration);
+                Subtitles captions = Subtitles.Parse(text, clipDuration);
                 captions.SaveAsSrt(destination);
             }
             catch (Exception ex)

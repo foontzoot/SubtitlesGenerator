@@ -33,7 +33,7 @@ namespace SubtitlesConverter.Domain
             },
         };
 
-        public IEnumerable<string> BreakLongLines(
+        public IEnumerable<string> Break(
             IEnumerable<string> text, int maxLineCharacters, int minBrokenLength) =>
             text.SelectMany(line => BreakLongLine(line, maxLineCharacters, minBrokenLength));
 

@@ -6,34 +6,34 @@ using System.Text;
 
 namespace SubtitlesConverter.Domain
 {
-    class Captions
+    class Subtitles
     {
-        private IEnumerable<CaptionLine> Lines { get; }
+        private IEnumerable<SubtitleLine> Lines { get; }
 
-        public Captions(IEnumerable<CaptionLine> lines)
+        public Subtitles(IEnumerable<SubtitleLine> lines)
         {
             Lines = lines.ToList();
         }
 
-        public static Captions Parse(string[] text, TimeSpan clipDuration)
+        public static Subtitles Parse(string[] text, TimeSpan clipDuration)
         {
             IEnumerable<string> lines = BreakLongLines(
                 BreakIntoSentences(Cleanup(text)),
                 95, 45).ToList();
 
             TextDurationMeter durationMeter = new TextDurationMeter(lines, clipDuration);
-            IEnumerable<CaptionLine> captions = lines
+            IEnumerable<SubtitleLine> subtitles = lines
                 .Select(line => (text: line, duration: durationMeter.EstimateDuration(line)))
-                .Select(tuple => new CaptionLine(tuple.text, tuple.duration));
-            return new Captions(captions);
+                .Select(tuple => new SubtitleLine(tuple.text, tuple.duration));
+            return new Subtitles(subtitles);
         }
 
         private static IEnumerable<string> BreakLongLines(
             IEnumerable<string> text, int maxLineCharacters, int minBrokenLength) =>
-            new LinesBreaker().BreakLongLines(text, maxLineCharacters, minBrokenLength);
+            new LinesBreaker().Break(text, maxLineCharacters, minBrokenLength);
 
         private static IEnumerable<string> BreakIntoSentences(IEnumerable<string> text) =>
-            new SentenceRules().Split(text);
+            new SentencesBreaker().Break(text);
 
         public void SaveAsSrt(FileInfo destination) =>
             File.WriteAllLines(destination.FullName, GenerateSrtFileContent(), Encoding.UTF8);
@@ -52,7 +52,7 @@ namespace SubtitlesConverter.Domain
         private IEnumerable<(TimeSpan begin, TimeSpan end, string content)> GenerateLineBoundaries()
         {
             TimeSpan begin = new TimeSpan(0);
-            foreach (CaptionLine line in Lines)
+            foreach (SubtitleLine line in Lines)
             {
                 TimeSpan end = begin + line.Duration;
                 yield return (begin, end, line.Content);

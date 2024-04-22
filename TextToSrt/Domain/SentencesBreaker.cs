@@ -5,7 +5,7 @@ using SubtitlesConverter.Common;
 
 namespace SubtitlesConverter.Domain
 {
-    class SentenceRules
+    class SentencesBreaker
     {
         private IEnumerable<(string pattern, string extract, string remove)> Rules { get; } = new[]
         {
@@ -17,7 +17,7 @@ namespace SubtitlesConverter.Domain
             (@"^(?<extract>.+\!).*$", "${extract}", "${extract}"),
         };
 
-        public IEnumerable<string> Split(IEnumerable<string> text) =>
+        public IEnumerable<string> Break(IEnumerable<string> text) =>
             text.SelectMany(BreakSentences);
 
         private IEnumerable<string> BreakSentences(string text)

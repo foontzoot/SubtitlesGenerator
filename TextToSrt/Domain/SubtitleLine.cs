@@ -2,12 +2,12 @@
 
 namespace SubtitlesConverter.Domain
 {
-    class CaptionLine
+    class SubtitleLine
     {
         public string Content { get; }
         public TimeSpan Duration { get; }
 
-        public CaptionLine(string content, TimeSpan duration)
+        public SubtitleLine(string content, TimeSpan duration)
         {
             Content = content.Trim();
             Duration = duration;
