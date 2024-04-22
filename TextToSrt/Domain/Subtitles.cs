@@ -17,9 +17,11 @@ namespace SubtitlesConverter.Domain
 
         public static Subtitles Parse(string[] text, TimeSpan clipDuration)
         {
-            IEnumerable<string> lines = BreakLongLines(
-                BreakIntoSentences(Cleanup(text)),
-                95, 45).ToList();
+            ITextProcessor cleanup = new LinesTrimmer();
+            
+            IEnumerable<string> lines = cleanup.Execute(text);
+            lines = BreakIntoSentences(lines);
+            lines = BreakLongLines(lines, 95, 45).ToList();
 
             TextDurationMeter durationMeter = new TextDurationMeter(lines, clipDuration);
             IEnumerable<SubtitleLine> subtitles = lines
@@ -59,10 +61,5 @@ namespace SubtitlesConverter.Domain
                 begin = end;
             }
         }
-
-        private static IEnumerable<string> Cleanup(string[] text) =>
-            text
-                .Select(line => line.Trim())
-                .Where(line => line.Length > 0);
     }
 }
