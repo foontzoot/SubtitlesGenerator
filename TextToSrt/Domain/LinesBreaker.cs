@@ -5,8 +5,17 @@ using SubtitlesConverter.Common;
 
 namespace SubtitlesConverter.Domain
 {
-    class LinesBreaker
+    class LinesBreaker : ITextProcessor
     {
+        private int MaxLineLength { get; }
+        private int MaxLengthToBreakInto { get; }
+
+        public LinesBreaker(int maxLineLength, int maxLengthToBreakInto)
+        {
+            MaxLineLength = maxLineLength;
+            MaxLengthToBreakInto = maxLengthToBreakInto;
+        }
+
         private IEnumerable<(string separatorPattern, string appendLeft, string prependRight)[]>
             Rules
         { get; } = new[]
@@ -33,17 +42,16 @@ namespace SubtitlesConverter.Domain
             },
         };
 
-        public IEnumerable<string> Break(
-            IEnumerable<string> text, int maxLineCharacters, int minBrokenLength) =>
-            text.SelectMany(line => BreakLongLine(line, maxLineCharacters, minBrokenLength));
+        public IEnumerable<string> Execute(IEnumerable<string> text) =>
+            text.SelectMany(line => BreakLongLine(line));
 
-        public IEnumerable<string> BreakLongLine(string line, int maxLength, int minBrokenLength)
+        public IEnumerable<string> BreakLongLine(string line)
         {
             string remaining = line;
 
             while (remaining.Length > 0)
             {
-                if (remaining.Length <= maxLength)
+                if (remaining.Length <= MaxLineLength)
                 {
                     yield return remaining;
                     break;
@@ -53,8 +61,7 @@ namespace SubtitlesConverter.Domain
                 foreach ((string separator, string toLeft, string toRight)[] rules in Rules)
                 {
                     IEnumerable<(string left, string right)> split =
-                        TryBreakLongLine(remaining, rules, maxLength, minBrokenLength)
-                            .ToList();
+                        TryBreakLongLine(remaining, rules).ToList();
 
                     if (split.Any())
                     {
@@ -76,21 +83,19 @@ namespace SubtitlesConverter.Domain
 
         private IEnumerable<(string left, string right)> TryBreakLongLine(
             string line,
-            IEnumerable<(string separatorPattern, string appendLeft, string prependRight)> rules,
-            int maxLength, int minBrokenLength) =>
-            rules.SelectMany(rule => BreakLongLine(line, rule, maxLength, minBrokenLength))
-                .WithMinimumOrEmpty(split => maxLength - split.left.Length);
+            IEnumerable<(string separatorPattern, string appendLeft, string prependRight)> rules) =>
+            rules.SelectMany(rule => BreakLongLine(line, rule))
+                .WithMinimumOrEmpty(split => MaxLineLength - split.left.Length);
 
         private IEnumerable<(string left, string right)> BreakLongLine(
             string line,
-            (string separatorPattern, string appendLeft, string prependRight) rule,
-            int maxLength, int minBrokenLength) =>
+            (string separatorPattern, string appendLeft, string prependRight) rule) =>
             new Regex(rule.separatorPattern).Matches(line)
                 .Select(match => (
                     left: line.Substring(0, match.Index) + rule.appendLeft,
                     right: rule.prependRight + line.Substring(match.Index + match.Length)))
                 .Where(split =>
-                    minBrokenLength <= split.left.Length &&
-                    split.left.Length <= maxLength);
+                    MaxLengthToBreakInto <= split.left.Length &&
+                    split.left.Length <= MaxLineLength);
     }
 }

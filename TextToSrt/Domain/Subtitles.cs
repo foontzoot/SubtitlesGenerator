@@ -18,10 +18,12 @@ namespace SubtitlesConverter.Domain
         public static Subtitles Parse(string[] text, TimeSpan clipDuration)
         {
             ITextProcessor cleanup = new LinesTrimmer();
-            
+            ITextProcessor intoSentences = new SentencesBreaker();
+            ITextProcessor intoShortLines = new LinesBreaker(95, 45);
+
             IEnumerable<string> lines = cleanup.Execute(text);
-            lines = BreakIntoSentences(lines);
-            lines = BreakLongLines(lines, 95, 45).ToList();
+            lines = intoSentences.Execute(lines);
+            lines = intoShortLines.Execute(lines).ToList();
 
             TextDurationMeter durationMeter = new TextDurationMeter(lines, clipDuration);
             IEnumerable<SubtitleLine> subtitles = lines
@@ -29,13 +31,6 @@ namespace SubtitlesConverter.Domain
                 .Select(tuple => new SubtitleLine(tuple.text, tuple.duration));
             return new Subtitles(subtitles);
         }
-
-        private static IEnumerable<string> BreakLongLines(
-            IEnumerable<string> text, int maxLineCharacters, int minBrokenLength) =>
-            new LinesBreaker().Break(text, maxLineCharacters, minBrokenLength);
-
-        private static IEnumerable<string> BreakIntoSentences(IEnumerable<string> text) =>
-            new SentencesBreaker().Break(text);
 
         public void SaveAsSrt(FileInfo destination) =>
             File.WriteAllLines(destination.FullName, GenerateSrtFileContent(), Encoding.UTF8);
