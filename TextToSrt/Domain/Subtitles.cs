@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SubtitlesConverter.Domain.TextProcessing;
 
 namespace SubtitlesConverter.Domain
 {
@@ -19,7 +20,8 @@ namespace SubtitlesConverter.Domain
         {
             ITextProcessor cleanup = new LinesTrimmer();
             ITextProcessor intoSentences = new SentencesBreaker();
-            ITextProcessor intoShortLines = new LinesBreaker(95, 45);
+            // ITextProcessor intoShortLines = new LinesBreaker(95, 45);
+            ITextProcessor intoShortLines = new DoNothing();
 
             IEnumerable<string> lines = cleanup.Execute(text);
             lines = intoSentences.Execute(lines);
